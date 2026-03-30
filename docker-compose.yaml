@@ -23,10 +23,10 @@ services:
 
   # Backend Service
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    #image: samdg441/dream-vacation-backend
+    #build:
+      #context: ./backend
+      #dockerfile: Dockerfile
+    image: samdg441/dream-samubackend
     container_name: dream-vacation-backend
     restart: unless-stopped
     ports:
@@ -50,10 +50,10 @@ services:
 
   # Frontend Service
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    #image: samdg441/dream-vacation-frontend
+    #build:
+      #context: ./frontend
+      #dockerfile: Dockerfile
+    image: samdg441/dream-samufrontend
     container_name: dream-vacation-frontend
     restart: unless-stopped
     ports:
