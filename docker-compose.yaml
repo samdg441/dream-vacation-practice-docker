@@ -1,0 +1,79 @@
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: dream-vacation-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: yourdbrootpassword
+      MYSQL_DATABASE: dreamvacations
+      MYSQL_USER: dreamuser
+      MYSQL_PASSWORD: yourdbpassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - dream-vacation-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    #image: samdg441/dream-vacation-backend
+    container_name: dream-vacation-backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=yourdbrootpassword
+      - DB_NAME=dreamvacations
+      - COUNTRIES_API_BASE_URL=https://restcountries.com/v3.1
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - dream-vacation-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    #image: samdg441/dream-vacation-frontend
+    container_name: dream-vacation-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_APP_PORT=3000
+      - VITE_API_URL=http://localhost:3001
+    depends_on:
+      - backend
+    networks:
+      - dream-vacation-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
+
+volumes:
+  mysql_data:
+
+networks:
+  dream-vacation-network:
+    driver: bridge
